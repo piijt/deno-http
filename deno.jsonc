@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "lib": ["deno.ns", "deno.unstable", "dom"]
+    },
+    "lint": {
+      "rules": {
+        "exclude": ["no-explicit-any", "ban-ts-comment"]
+      }
+    },
+    "tasks": {
+      "start": "deno run --allow-net your_script.ts",
+      "lint": "deno lint"
+    }
+  }
