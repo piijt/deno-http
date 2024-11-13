@@ -1,37 +1,62 @@
 interface Route {
   method: string;
   path: string;
-  handler: (req: Request) => Promise<Response>;
+  handler: (req: Request, params: Record<string, string>) => Promise<Response>;
 }
 
 interface Service {
   basePath: string;
   routes: Route[];
+  middleware?: Array<(req: Request) => Promise<Request>>;
 }
+const matchRoute = (routePath: string, requestPath: string) => {
+  const routeParts = routePath.split("/");
+  const requestParts = requestPath.split("/");
+
+  if (routeParts.length !== requestParts.length) return null;
+
+  const params: Record<string, string> = {};
+  console.log(routeParts);
+  for (let i = 0; i < routeParts.length; i++) {
+    if (routeParts[i].startsWith(":")) {
+      const paramName = routeParts[i].slice(1);
+      params[paramName] = requestParts[i];
+    } else if (routeParts[i] !== requestParts[i]) {
+      return null;
+    }
+  }
+  return params;
+};
 
 const HttpFactory = (services: Service[]) => {
   const handler = async (req: Request): Promise<Response> => {
     const url = new URL(req.url);
-    
-    for (const service of services) {
-      const matchedRoute = service.routes.find(route =>
-        url.pathname === `${service.basePath}${route.path}` && route.method === req.method
-      );
 
-      if (matchedRoute) {
-        return matchedRoute.handler(req);
+    for (const service of services) {
+      let modifiedRequest = req;
+      if (service.middleware) {
+        for (const middleware of service.middleware) {
+          console.log(middleware)
+          modifiedRequest = await middleware(modifiedRequest);
+        }
+      }
+
+      for (const route of service.routes) {
+        const params = matchRoute(
+          `${service.basePath}${route.path}`,
+          url.pathname
+        );
+
+        if (params && route.method === modifiedRequest.method) {
+          return route.handler(modifiedRequest, params);
+        }
       }
     }
 
     if (req.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
-        headers: {
-          "Allow": "GET, POST, PUT, DELETE, OPTIONS",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
+        headers: {},
       });
     }
 
@@ -40,7 +65,6 @@ const HttpFactory = (services: Service[]) => {
 
   return {
     listen: (port: number) => {
-      console.log(`Server running on http://localhost:${port}`);
       Deno.serve({ port }, handler);
     },
   };
