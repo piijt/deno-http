@@ -6,7 +6,6 @@ const addCorsHeaders = async (req: Request): Promise<Request> => {
     headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     headers.set("Access-Control-Allow-Headers", "Content-Type");
     
-    // Return a new request with the modified headers
     return new Request(req.url, {
       method: req.method,
       headers,
