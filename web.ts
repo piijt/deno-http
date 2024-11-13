@@ -1,27 +1,10 @@
-import { HttpFactory, Route } from "./httpFactory.ts";
+import { HttpFactory } from "./httpFactory.ts";
+import service from "./services/hello-world/index.ts";
 
-const getDataHandler = async (_req: Request): Promise<Response> => {
-  const data = { message: "GET request received", timestamp: new Date() };
-  return new Response(JSON.stringify(data), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
-};
-
-const postDataHandler = async (req: Request): Promise<Response> => {
-  const body = await req.json();
-  const response = { message: "POST request received", data: body };
-  return new Response(JSON.stringify(response), {
-    status: 201,
-    headers: { "Content-Type": "application/json" },
-  });
-};
-
-const routes: Route[] = [
-  { method: "GET", path: "/data", handler: getDataHandler },
-  { method: "POST", path: "/data", handler: postDataHandler },
+const services = [
+  service,
 ];
 
-const app = HttpFactory("/myapi", routes);
+const app = HttpFactory(services);
 
 app.listen(8000);

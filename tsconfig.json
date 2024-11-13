@@ -7,6 +7,6 @@
       "moduleResolution": "node"
     },
     "tasks": {
-      "deno": "deno run --allow-net your_script.ts"
+      "deno": "deno run --allow-net web.ts"
     }
   }

@@ -4,19 +4,26 @@ interface Route {
   handler: (req: Request) => Promise<Response>;
 }
 
-const HttpFactory = (basePath: string, routes: Route[]) => {
+interface Service {
+  basePath: string;
+  routes: Route[];
+}
+
+const HttpFactory = (services: Service[]) => {
   const handler = async (req: Request): Promise<Response> => {
     const url = new URL(req.url);
+    
+    for (const service of services) {
+      const matchedRoute = service.routes.find(route =>
+        url.pathname === `${service.basePath}${route.path}` && route.method === req.method
+      );
 
-    const matchedRoute = routes.find(route => 
-      url.pathname === `${basePath}${route.path}` && route.method === req.method
-    );
+      if (matchedRoute) {
+        return matchedRoute.handler(req);
+      }
+    }
 
-    if (matchedRoute) {
-      // Call the route handler if found
-      return matchedRoute.handler(req);
-    } else if (req.method === "OPTIONS") {
-      // Handle CORS preflight
+    if (req.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
         headers: {
@@ -26,18 +33,18 @@ const HttpFactory = (basePath: string, routes: Route[]) => {
           "Access-Control-Allow-Headers": "Content-Type",
         },
       });
-    } else {
-      return new Response("Not Found", { status: 404 });
     }
+
+    return new Response("Not Found", { status: 404 });
   };
 
   return {
     listen: (port: number) => {
-      console.log(`Server running on http://localhost:${port}${basePath}`);
+      console.log(`Server running on http://localhost:${port}`);
       Deno.serve({ port }, handler);
     },
   };
 };
 
 export { HttpFactory };
-export type { Route };
+export type { Route, Service };
