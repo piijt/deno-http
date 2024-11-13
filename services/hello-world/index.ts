@@ -33,10 +33,11 @@ const postExampleData = async (req: Request): Promise<Response> => {
 
 const getOrgData = async (req: Request, params: Record<string, string>): Promise<Response> => {
     const { org, id } = params;
+    console.log({req})
     const data = { message: `GET request for org: ${org}, id: ${id}`, timestamp: new Date() };
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: req.headers,
     });
   };
 

@@ -16,7 +16,6 @@ const matchRoute = (routePath: string, requestPath: string) => {
   if (routeParts.length !== requestParts.length) return null;
 
   const params: Record<string, string> = {};
-  console.log(routeParts);
   for (let i = 0; i < routeParts.length; i++) {
     if (routeParts[i].startsWith(":")) {
       const paramName = routeParts[i].slice(1);
@@ -36,7 +35,6 @@ const HttpFactory = (services: Service[]) => {
       let modifiedRequest = req;
       if (service.middleware) {
         for (const middleware of service.middleware) {
-          console.log(middleware)
           modifiedRequest = await middleware(modifiedRequest);
         }
       }
