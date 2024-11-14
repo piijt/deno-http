@@ -8,7 +8,7 @@
       }
     },
     "tasks": {
-      "start": "deno run --allow-net your_script.ts",
+      "start": "deno run --allow-net web.ts",
       "lint": "deno lint"
     }
   }

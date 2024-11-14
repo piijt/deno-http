@@ -1,44 +1,13 @@
-import { Route, Service } from "../../httpFactory.ts";
+import { Route, Service } from "../../http/index.d.ts";
+import { addCorsHeaders, setXApiHeaderMiddleware, createHeaderMiddleware } from "../shared/middleware/index.middleware.ts";
+import { postExampleData, getExampleData, getOrgData } from "./controllers/index.controller.ts";
 
-const addCorsHeaders = async (req: Request): Promise<Request> => {
-    const headers = new Headers(req.headers);
-    headers.set("Access-Control-Allow-Origin", "*");
-    headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    headers.set("Access-Control-Allow-Headers", "Content-Type");
-    
-    return new Request(req.url, {
-      method: req.method,
-      headers,
-      body: req.body,
-    });
-  };
-
-const getExampleData = async (_req: Request): Promise<Response> => {
-  const data = { message: "Example GET request", timestamp: new Date() };
-  return new Response(JSON.stringify(data), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
-};
-
-const postExampleData = async (req: Request): Promise<Response> => {
-  const body = await req.json();
-  const response = { message: "Example POST request", data: body };
-  return new Response(JSON.stringify(response), {
-    status: 201,
-    headers: { "Content-Type": "application/json" },
-  });
-};
-
-const getOrgData = async (req: Request, params: Record<string, string>): Promise<Response> => {
-    const { org, id } = params;
-    console.log({req})
-    const data = { message: `GET request for org: ${org}, id: ${id}`, timestamp: new Date() };
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: req.headers,
-    });
-  };
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "x-api-key": "123"
+}
 
 const routes: Route[] = [
   { method: "GET", path: "/data", handler: getExampleData },
@@ -47,9 +16,9 @@ const routes: Route[] = [
 ];
 
 const exampleService: Service = {
-  basePath: "/hello-world",
+  namespace: "/hello-world",
   routes,
-  middleware: [addCorsHeaders]
+  middleware: [createHeaderMiddleware(headers)]
 };
 
 export default exampleService;
